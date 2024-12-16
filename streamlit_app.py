@@ -1,5 +1,5 @@
 # Import necessary packages
-import requests  # Moved here as per requirement
+import requests  # For API calls
 import streamlit as st
 from snowflake.snowpark.functions import col
 
@@ -20,19 +20,32 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(
     col('FRUIT_NAME'), col('SEARCH_ON')
 ).to_pandas()
 
-# Debugging: Show the DataFrame content
-st.dataframe(my_dataframe, use_container_width=True)
-st.stop()  # Pause here for debugging
-
-# Convert Snowpark DataFrame to Pandas
-pd_df = my_dataframe
+# Debugging: Show the DataFrame content (Uncomment this if needed)
+# st.dataframe(my_dataframe, use_container_width=True)
+# st.stop()  # Pause for debugging
 
 # Multiselect for ingredients
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
-    pd_df['FRUIT_NAME'].tolist(),
+    my_dataframe['FRUIT_NAME'].tolist(),
     max_selections=5
 )
+
+# Display selected fruits with SEARCH_ON values
+if ingredients_list:
+    for fruit_chosen in ingredients_list:
+        # Fetch SEARCH_ON value dynamically
+        search_on = my_dataframe.loc[my_dataframe['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        st.write(f"The search value for **{fruit_chosen}** is **{search_on}**.")
+
+        # Display nutrition information
+        st.subheader(f"{fruit_chosen} Nutrition Information")
+        response = requests.get(f"https://fruityvice.com/api/fruit/{search_on}")
+        if response.status_code == 200:
+            # Display nutrition information in a table
+            st.dataframe(response.json(), use_container_width=True)
+        else:
+            st.error(f"Failed to fetch data for {fruit_chosen}. API response: {response.status_code}")
 
 # Button to submit order
 time_to_insert = st.button('Submit Order', key="submit_button")
@@ -51,18 +64,3 @@ if time_to_insert:
         st.warning("Please enter the name for your Smoothie before submitting.")
     elif not ingredients_list:
         st.warning("Please select at least one ingredient before submitting.")
-
-# Additional logic to fetch and display fruit data
-if ingredients_list:
-    for fruit_chosen in ingredients_list:
-        # Fetch SEARCH_ON value dynamically
-        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        st.write(f"The search value for {fruit_chosen} is {search_on}.")
-
-        # Fetch and display nutrition information
-        st.subheader(f"{fruit_chosen} Nutrition Information")
-        fruityvice_response = requests.get(f"https://fruityvice.com/api/fruit/{search_on}")
-        if fruityvice_response.status_code == 200:
-            sf_df = st.dataframe(data=fruityvice_response.json(), use_container_width=True)
-        else:
-            st.error(f"Failed to fetch data for {fruit_chosen}. API response: {fruityvice_response.status_code}")
