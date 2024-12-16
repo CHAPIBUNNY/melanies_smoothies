@@ -39,7 +39,7 @@ if ingredients_list:
 
         # Display nutrition information
         st.subheader(f"{fruit_chosen} Nutrition Information")
-        response = requests.get(f"https://fruityvice.com/api/fruit/{search_on}")
+        response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
         
         if response.status_code == 200:
             # Display nutrition information in a table
