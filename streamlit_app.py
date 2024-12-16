@@ -20,10 +20,6 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(
     col('FRUIT_NAME'), col('SEARCH_ON')
 ).to_pandas()
 
-# Debugging: Show the DataFrame content (Uncomment this if needed)
-# st.dataframe(my_dataframe, use_container_width=True)
-# st.stop()  # Pause for debugging
-
 # Multiselect for ingredients
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
@@ -31,16 +27,20 @@ ingredients_list = st.multiselect(
     max_selections=5
 )
 
-# Display selected fruits with SEARCH_ON values
+# Display selected fruits with SEARCH_ON values and fetch data
 if ingredients_list:
     for fruit_chosen in ingredients_list:
-        # Fetch SEARCH_ON value dynamically
+        # Fetch SEARCH_ON value dynamically and apply fallback
         search_on = my_dataframe.loc[my_dataframe['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        if not search_on or search_on == "None":
+            search_on = fruit_chosen.lower()  # Fallback to fruit name in lowercase
+        
         st.write(f"The search value for **{fruit_chosen}** is **{search_on}**.")
 
         # Display nutrition information
         st.subheader(f"{fruit_chosen} Nutrition Information")
         response = requests.get(f"https://fruityvice.com/api/fruit/{search_on}")
+        
         if response.status_code == 200:
             # Display nutrition information in a table
             st.dataframe(response.json(), use_container_width=True)
