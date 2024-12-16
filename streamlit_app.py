@@ -1,7 +1,6 @@
 # Import necessary packages
-import requests
+import requests  # Moved here as per requirement
 import streamlit as st
-#from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -47,12 +46,14 @@ if time_to_insert:
         session.sql(my_insert_stmt).collect()
         
         # Show success message
-        st.success(f"Your Smoothie for is ordered, {name_on_order}!")
+        st.success(f"Your Smoothie is ordered, {name_on_order}!")
     elif not name_on_order:
         st.warning("Please enter the name for your Smoothie before submitting.")
     elif not ingredients_list:
         st.warning("Please select at least one ingredient before submitting.")
 
-smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-#st.text(smoothiefroot_response.json())
-sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
+# Additional logic to fetch and display fruit data
+if ingredients_list:
+    for fruit_chosen in ingredients_list:
+        smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen.lower()}")
+        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
