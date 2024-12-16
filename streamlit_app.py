@@ -1,4 +1,5 @@
 # Import necessary packages
+import requests
 import streamlit as st
 #from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark.functions import col
@@ -51,3 +52,6 @@ if time_to_insert:
         st.warning("Please enter the name for your Smoothie before submitting.")
     elif not ingredients_list:
         st.warning("Please select at least one ingredient before submitting.")
+
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+st.text(smoothiefroot_response)
