@@ -1,7 +1,7 @@
 # Import necessary packages
 import streamlit as st
 import requests
-from snowflake.snowpark.functions import col
+from snowflake.snowpark.functions import col, when_matched  # Added when_matched
 
 # Write directly to the app
 st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
@@ -27,7 +27,7 @@ ingredients_list = st.multiselect(
     max_selections=5
 )
 
-# Handle ingredients logic with indentation matching the image
+# Handle ingredients logic
 if ingredients_list:
     ingredients_string = ''
     for fruit_chosen in ingredients_list:
@@ -61,3 +61,20 @@ if time_to_insert:
         st.warning("Please enter the name for your Smoothie before submitting.")
     elif not ingredients_list:
         st.warning("Please select at least one ingredient before submitting.")
+
+# Merge logic to update ORDER_FILLED where necessary
+try:
+    # Retrieve the current orders and edited data
+    og_dataset = session.table("smoothies.public.orders")
+    edited_dataset = session.create_dataframe(my_dataframe)  # Replace with edited_df if available
+    
+    # Perform the merge to update ORDER_FILLED
+    og_dataset.merge(
+        edited_dataset,
+        (og_dataset['ORDER_UID'] == edited_dataset['ORDER_UID']),
+        [when_matched().update({'ORDER_FILLED': edited_dataset['ORDER_FILLED']})]
+    )
+
+    st.success("Order updates merged successfully!", icon="✅")
+except Exception as e:
+    st.error(f"Failed to update orders: {e}")
