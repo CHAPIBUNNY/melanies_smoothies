@@ -54,4 +54,4 @@ if time_to_insert:
         st.warning("Please select at least one ingredient before submitting.")
 
 smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-st.text(smoothiefroot_response)
+st.text(smoothiefroot_response.json())
