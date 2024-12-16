@@ -35,11 +35,11 @@ if ingredients_list:
         if not search_on or search_on == "None":
             search_on = fruit_chosen.lower()  # Fallback to fruit name in lowercase
         
-        st.write(f"The search value for **{fruit_chosen}** is **{search_on}**.")
+        #st.write(f"The search value for **{fruit_chosen}** is **{search_on}**.")
 
         # Display nutrition information
         st.subheader(f"{fruit_chosen} Nutrition Information")
-        response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
+        response = requests.get(f"https://fruityvice.com/api/fruit/{search_on}")
         
         if response.status_code == 200:
             # Display nutrition information in a table
