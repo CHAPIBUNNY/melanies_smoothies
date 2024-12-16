@@ -1,6 +1,6 @@
 # Import necessary packages
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
+import requests
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -15,7 +15,8 @@ name_on_order = st.text_input("Name on Smoothie:")
 st.write("The name on your Smoothie will be:", name_on_order)
 
 # Initialize Snowflake session and retrieve fruit options
-session = get_active_session()
+cnx = st.connection("snowflake")
+session = cnx.session()
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME')).to_pandas()
 fruit_options = my_dataframe['FRUIT_NAME'].tolist()  # Convert to a list for multiselect
 
@@ -51,7 +52,6 @@ if time_to_insert:
     elif not ingredients_list:
         st.warning("Please select at least one ingredient before submitting.")
 
-import requests
 smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-st.text(smoothiefroot_response.json())
+#st.text(smoothiefroot_response.json())
 sf_df = st.dataframe(data=smoothiefroot_response.json(), user_container_width=True)
